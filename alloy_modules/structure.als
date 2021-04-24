@@ -56,17 +56,17 @@ pred I [e: ELL] {
   e.cols >= 0
   e.maxnz >= 0
   e.maxnz <= e.cols
-  e.coef.univ = range[e.rows]->range[e.maxnz]   -- set i->j for coef
-  e.jcoef.univ = range[e.rows]->range[e.maxnz]  -- set i->j for jcoef
+  e.coef.univ = range[e.rows]->range[e.maxnz]   -- set i->j for coef (Int -> Int) ?? When use .univ, when use coef[Int]
+  e.jcoef.univ = range[e.rows]->range[e.maxnz]  -- set i->j for jcoef (Int -> Int)
 
   -- column indices are valid (include -1 placeholder)
   all j: e.jcoef[Int][Int] |
     j in range[-1, e.cols]
 
   -- column indices can appear once per row (-1 excepted)
-  all i: range[e.rows] |
-    all j: range[e.cols] |
-      #e.jcoef[i].j <= 1
+  all i: range[e.rows] |   
+    all j: range[e.cols] |   
+      #e.jcoef[i].j <= 1    // coef[i] ith row. coef[i].j ith row join j value. this value will <=1
 
   -- enforce placeholders are at same locations within coef and jcoef
   all i: range[e.rows] |
@@ -79,7 +79,7 @@ pred I [c: CSR] {
   c.rows >= 0
   c.cols >= 0
   c.IA[0] = 0
-  c.IA.end = #c.A        -- last value of IA is length of A
+  end[c.IA] = #c.A        -- last value of IA is length of A
   #c.IA = c.rows.add[1]  -- length of IA is rows + 1
   #c.A = #c.JA           -- A and JA are same length
   Zero not in c.A[Int]   -- A cannot contain 0
@@ -99,14 +99,15 @@ pred I [c: CSR] {
 }
 
 -- relation is a 1D array (indices range from 0 to n-1)
-pred Array1D [a: Int->univ] {
+pred Array1D [a: Int->univ] { // used in CSR, received Int -> Value or Int -> Int 
+                                          // could be replaced by seq Int??
   a.univ = range[#a]
 }
 
 -- relation is a 2D array (indices range from 0 to rows-1, 0 cols-1)
 pred Array2D [a: Int->Int->univ] {
   a.univ.univ = range[#a.univ.univ]
-  let s = #a[0] | all i: a.univ.univ | a[i].univ = range[s]
+  let s = #a[0] | all i: a.univ.univ | a[i].univ = range[s] //#a[0] is the number of columns
 }
 
 -- values in 1D array are unique
@@ -120,7 +121,7 @@ fun end [s: Int->univ]: univ {
 }
 
 -- subset of 1D array in range [m, n-1]
-fun slice [s: Int->univ, m, n: Int]: Int->univ {
+fun slice [s: Int->univ, m, n: Int]: Int->univ { //s is an existing relation, return a set of (Int->Univ)
   0 <= m and m < n and n <= #s => { i: Int, v: univ |
       (i.add[m])->v in s and i in range[n.sub[m]] } else {none->none}
 }

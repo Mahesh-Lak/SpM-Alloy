@@ -22,14 +22,14 @@ open behavior
 pred transpose [m, m': Matrix] {
   m'.rows = m.cols
   m'.cols = m.rows
-  m'.vals = { j, i: Int, v: Value | i->j->v in m.vals }
+  m'.vals = { j, i: Int, v: Value | i->j->v in m.vals } //??use this to represent relation?
 }
 
 -- CSR matrix transpose
 pred transpose [c, c': CSR] {
   c'.rows = c.cols
   c'.cols = c.rows
-  some iao, iao', iao'', iao''': seq Int {
+  some iao, iao', iao'', iao''': seq Int {   //seq Int: Int -> Int
     countcols[c, iao]
     setptrs[iao, iao']
     copyvals[c, c', iao', iao'']
@@ -46,7 +46,7 @@ pred countcols[c: CSR, iao: seq Int] {
   #iao = c.cols.add[1]
   iao[0] = 0
   all j: range[c.cols] |
-    iao[j.add[1]] = #c.JA.j
+    iao[j.add[1]] = #c.JA.j //c.JA.j: all elements in JA whose value is j
 }
 
 -- Phase 2 of the transpose algorithm:
@@ -54,16 +54,18 @@ pred countcols[c: CSR, iao: seq Int] {
 pred setptrs [iao, iao': seq Int] {
   #iao' = #iao
   iao'[0] = 0
-  all i: iao.butlast.inds |
+  all i: iao.butlast.inds |   //butlast: (seq Int) except the last element; inds:index set
     let i' = i.add[1] |
       iao'[i'] = iao'[i].add[iao[i']]
 }
+//? This is endding index not starting index
+
 
 -- Phase 3 of the transpose algorithm:
 -- Copy values into output matrix.  Has side effect of right-shifting output IA
 pred copyvals [c, c': CSR, iao_in, iao_out: seq Int] {
   #iao_out = #iao_in
-  let loopvars = { i: range[c.rows], k: range[c.IA[i], c.IA[i.add[1]]] } |
+  let loopvars = { i: range[c.rows], k: range[c.IA[i], c.IA[i.add[1]]] } | //loopvars: i -> k
     some iter: Int->Int->Int, iao: Int->Int->Int {
       table[loopvars, iter]
       iao[0] = iao_in

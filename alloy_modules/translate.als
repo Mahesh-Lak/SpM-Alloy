@@ -22,23 +22,26 @@ open behavior
 pred ellcsr [e: ELL, c: CSR] {
   c.rows = e.rows
   c.cols = e.cols
-  c.IA[0] = 0
-  #c.IA = c.rows.add[1]
+  c.IA[0] = 0 //c.IA.0=0
+  #c.IA = c.rows.add[1] // maximum size of IA
+				   // IA is the relation inside CSR 
+				   // `add` is the built-in function in int
   some iter: Int->Int->Int, kpos: Int->Int {
     table[range[e.rows]->range[e.maxnz], iter]
     kpos[0] = 0
-    #kpos = add[#iter, 1]
+    #kpos = add[#iter, 1] //maximum size of kpos
     #c.A = kpos.end
     #c.JA = kpos.end
     all i: range[e.rows] {
       all k: range[e.maxnz] |
-        let t = iter[i][k], t' = t.add[1] |
+        let t = iter[i][k], t' = t.add[1] |   //A let statement acts as a macro replacing the right-side of the assignment wherever the left-side of the assignment appears
           e.coef[i][k] != Zero => {
-            c.A[kpos[t]] = e.coef[i][k]
+            c.A[kpos[t]] = e.coef[i][k]   //c, e are all known input
             c.JA[kpos[t]] = e.jcoef[i][k]
             kpos[t'] = kpos[t].add[1]
           } else 
-            kpos[t'] = kpos[t]
+            kpos[t'] = kpos[t]   // If not equal, we skip this index without
+                                       // increase A to next time stamp
       c.IA[i.add[1]] = kpos[end[iter, i].add[1]]
     }
   }
@@ -47,11 +50,11 @@ pred ellcsr [e: ELL, c: CSR] {
 -- establish iteration table by adding time column to end of relation r
 pred table [r: Int->Int, iter: Int->Int->Int] {
   #iter = #r                -- same size as r
-  iter.Int = r              -- make left side = r
+  iter.Int = r              -- make left side = r // the last element is int, join the last element and Int obtain left, i.e., Int -> Int
   c3[iter] = range[#r]      -- make right side = time stamps
-  all i, i': r.Int,
-      j, j': Int.r,
-      t, t': range[#r] {
+  all i, i': r.Int,   // row
+      j, j': Int.r,   // column
+      t, t': range[#r] {  // t is time stamp
     i->j->t in iter and i'->j'->t' in iter and t < t' =>
       i <= i' and (i = i' => j < j')
   }
@@ -65,10 +68,13 @@ fun c3 [r: Int->Int->Int]: Int {
 -- the last iteration of the inner loop for outer loop i'
 fun end [iter: Int->Int->Int, i': Int]: Int {
   let times = {t: Int | some i, k: Int | i->k->t in iter and i <= i' } |
-    some times => max[times] else 0
+    some times => max[times] else 0 // the last iteartion for one row end
 }
 
+
+
 /*
+ * check for ellcsr
  * Below we perform three checks:
  * 
  *   1. alphaValid checks that the abstraction functions map
