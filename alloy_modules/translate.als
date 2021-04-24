@@ -73,6 +73,12 @@ fun end [iter: Int->Int->Int, i': Int]: Int {
 
 
 
+fun maxnz[c:CSR]:Int {
+  let cols_in_row = {cols: Int | some i: range[0, (#c.IA).sub[1]] | cols = c.IA[i.add[1]]-c.IA[i]} |
+     some cols_in_row => max[cols_in_row] else 0 
+}
+
+
 /*
  * check for ellcsr
  * Below we perform three checks:
@@ -107,3 +113,21 @@ assert translateValid {
 check alphaValid for 1 Matrix, 1 ELL, 1 CSR, 3 Value
 check preservesRep for 0 Matrix, 1 ELL, 1 CSR, 3 Value
 check translateValid for 1 Matrix, 1 ELL, 1 CSR, 3 Value
+
+/*
+ * check for csrell
+ * Below we perform  checks:
+ * 
+ *   1. maxnzValid checks the maxnz[] function capcturing the correct maxnz variable in ELL
+ *
+ *   2. preservesRep checks that the translation algorithm results
+ *      in a valid CSR matrix
+ *
+ *   3. translateValid checks that the resulting CSR matrix
+ *      represents the same dense matrix as the original ELL
+ */ 
+assert maxnzValid {
+  all e: ELL, c:CSR |
+    I[e] and ellcsr[e, c]  =>(maxnz[c]=e.maxnz)
+}
+check maxnzValid for 0 Matrix, 1 ELL, 1 CSR, 3 Value

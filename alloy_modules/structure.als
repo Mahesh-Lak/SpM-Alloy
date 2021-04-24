@@ -159,6 +159,7 @@ pred showELL {
 run showELL for 0 Matrix, 1 ELL, 0 CSR, 5 Value
 
 -- generate a 5x5 CSR matrix
+
 pred showCSR {
   some c: CSR {
     c.rows = 5
