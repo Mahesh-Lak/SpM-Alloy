@@ -47,13 +47,18 @@ fact {
 pred I [m: Matrix] {
   m.rows >= 0
   m.cols >= 0
+  //m.rows != 0 <=> m.cols != 0
+  m.rows = 0 <=> m.cols = 0
   m.vals.univ = range[m.rows]->range[m.cols]
 }
+
 
 -- ELL concrete invariant
 pred I [e: ELL] {
   e.rows >= 0
   e.cols >= 0
+  //e.rows != 0 <=> e.cols != 0
+  e.rows = 0 <=> e.cols = 0
   e.maxnz >= 0
   e.maxnz <= e.cols
   e.coef.univ = range[e.rows]->range[e.maxnz]   -- set i->j for coef (Int -> Int) ?? When use .univ, when use coef[Int]
@@ -78,6 +83,8 @@ pred I [e: ELL] {
 pred I [c: CSR] {
   c.rows >= 0
   c.cols >= 0
+  //c.rows != 0 <=> c.cols != 0
+  c.rows = 0 <=> c.cols = 0
   c.IA[0] = 0
   end[c.IA] = #c.A        -- last value of IA is length of A
   #c.IA = c.rows.add[1]  -- length of IA is rows + 1
