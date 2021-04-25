@@ -80,8 +80,8 @@ pred I [e: ELL] {
       e.coef[i][k] = Zero <=> e.jcoef[i][k] = -1
 
   -- there exists some rows in coef where all values are non-zero
-  some i: range[e.rows] |
-    Zero not in (i.(ELL.coef))[Int]
+  e.rows>0 => {some i: range[e.rows] |
+    Zero not in (i.(e.coef))[Int]}
 
 }
 
@@ -148,7 +148,7 @@ fun range [n: Int]: set Int {
 
 -- the set [m, n-1]
 fun range [m, n: Int]: set Int {
-  { i: Int | m <= i and i < n }
+  n>0 => { i: Int | m <= i and i < n } else none
 }
 
 -- generate a 5x5 dense matrix
