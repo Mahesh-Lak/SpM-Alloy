@@ -74,7 +74,7 @@ fun end [iter: Int->Int->Int, i': Int]: Int {
 
 
 fun maxnz[c:CSR]:Int {
-  let cols_in_row = {cols: Int | some i: range[0, (#c.IA).sub[1]] | cols = c.IA[i.add[1]]-c.IA[i]} |
+  let cols_in_row = {cols: Int | some i: range[0, (#c.IA).sub[1]] | cols = (c.IA[i.add[1]]).sub[c.IA[i]]} | // why could only use .sub not '-'
      some cols_in_row => max[cols_in_row] else 0 
 }
 
@@ -85,12 +85,6 @@ fun maxnz[c:CSR]:Int {
  * 
  *   1. alphaValid checks that the abstraction functions map
  *      valid sparse representations to valid dense representations
- *
- *   2. preservesRep checks that the translation algorithm results
- *      in a valid CSR matrix
- *
- *   3. translateValid checks that the resulting CSR matrix
- *      represents the same dense matrix as the original ELL
  */  
 
 assert alphaValid {
