@@ -48,7 +48,7 @@ pred I [m: Matrix] {
   m.rows >= 0
   m.cols >= 0
   //m.rows != 0 <=> m.cols != 0
-  m.rows = 0 <=> m.cols = 0
+  m.rows = 0 <=> m.cols = 0 
   m.vals.univ = range[m.rows]->range[m.cols]
 }
 
@@ -61,6 +61,7 @@ pred I [e: ELL] {
   e.rows = 0 <=> e.cols = 0
   e.maxnz >= 0
   e.maxnz <= e.cols
+  -- if all values are 0, this matrix is not necessary  
   e.coef.univ = range[e.rows]->range[e.maxnz]   -- set i->j for coef (Int -> Int) ?? When use .univ, when use coef[Int]
   e.jcoef.univ = range[e.rows]->range[e.maxnz]  -- set i->j for jcoef (Int -> Int)
 
@@ -77,6 +78,11 @@ pred I [e: ELL] {
   all i: range[e.rows] |
     all k: range[e.maxnz] |
       e.coef[i][k] = Zero <=> e.jcoef[i][k] = -1
+
+  -- there exists some rows in coef where all values are non-zero
+  some i: range[e.rows] |
+    Zero not in (i.(ELL.coef))[Int]
+
 }
 
 -- CSR concrete invariant
@@ -103,6 +109,8 @@ pred I [c: CSR] {
   all i: range[c.rows] |
     let a = c.IA[i], b = c.IA[i.add[1]] |
       c.JA.slice[a, b].valsUnique
+
+
 }
 
 -- relation is a 1D array (indices range from 0 to n-1)
@@ -135,7 +143,7 @@ fun slice [s: Int->univ, m, n: Int]: Int->univ { //s is an existing relation, re
 
 -- the set [0, n-1]
 fun range [n: Int]: set Int {
-  { i: Int | 0 <= i and i < n }
+  n>0 => { i: Int | 0 <= i and i < n } else none
 }
 
 -- the set [m, n-1]
